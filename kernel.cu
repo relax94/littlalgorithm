@@ -45,7 +45,7 @@ void branchingRight(Node *from, int row, int col){
 	right = from->rightBranching(row, col);
 }
 
-
+// --------- REWRITE !!!!!!!!!!! ----------------
 void filterTree(std::vector<Node*> &tree) {
 
 	std::vector<Node*> updated;
@@ -66,6 +66,8 @@ void startEngine(int *M) {
 	localCycle.reserve(100);
 	std::vector<Node*> tree;
 	tree.reserve(100);
+
+	//------- FIX THIS ** -------------
 	Node *X0 = new Node(n0, 0, 0);
 	X0->setInitialMatrix(M);
 	X0->invokeAdduction();
@@ -75,6 +77,8 @@ void startEngine(int *M) {
 	rootM = X0->S;
 	Node *node = X0;
 	bool removeProcess = false;
+
+	// -------- WHITE TO CHECK ANOTHER ------------
 	do
 	{
 		if (node->size == 2) {
@@ -86,10 +90,7 @@ void startEngine(int *M) {
 				node->handleStraightforwardMatrix();
 			}
 
-			clock_t start = clock();
 			filterTree(tree);
-			clock_t end = clock();
-			clock_t waiter = end - start;
 
 			if (tree.size() == 0)
 				break;
@@ -103,6 +104,8 @@ void startEngine(int *M) {
 			node->getPathForRemove(row, col);
 			srand(time(NULL));
 
+			// -------- NEED TO MOST FASTEST WAY TO PARALL THIS 
+			// STANDART THREADS ADDED -H
 			Node *left = node->leftBranching(row, col);
 
 			Node *right = node->rightBranching(row, col);
@@ -130,6 +133,7 @@ void startEngine(int *M) {
 
 
 
+// ---------------- DO NOT SHOW $W: 'DIRTY CODE';
 int main() {
 
 

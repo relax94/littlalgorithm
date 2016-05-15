@@ -6,6 +6,7 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
+// ------- $TD : 'WRITE MORE ORGANIZED WITH INITIAL FUNCS';
 Node::Node(int size, int s, int s0)
 {
 	this->size = size;
@@ -27,6 +28,7 @@ void Node::setInitials(int iSize){
 		this->P[i] = -1;
 }
 
+// --- $ID : 'MAYBE ALLOC MEMORY ON ONE WAY';
 void Node::setInitialMatrix(int *sourceMatrix) {
 	this->baseSize = this->size;
 	this->setInitials(this->baseSize);
@@ -64,6 +66,7 @@ void Node::setMatrix(int *m) {
 	}
 }
 
+// ---- $TD: 'REWRITE WITH MORE PRODUCITY BY BINARY COPYING'
 void Node::setMatrixWithRemoveExclude(int *source, int row, int col) {
 
 	this->M = (int *)malloc(this->size * this->size * sizeof(int));
@@ -103,6 +106,7 @@ void Node::printMatrix() {
 	std::cout << std::endl;
 }
 
+// $TD: 'REPLACE BY STANDART STD OR BOOST';
 int Node::getArrayMinValue(int restrictVal, /*int *row*/ int row) {
 	int min = InfityMaxValue;
 	for (int i = 0; i < size; i++) {
@@ -113,6 +117,10 @@ int Node::getArrayMinValue(int restrictVal, /*int *row*/ int row) {
 	return min;
 }
 
+// $TD : 'REWRITE BY INIT WAY : CHANGES 4 CYCLES BY 2 AND
+//								SPEED UP  getPathForRemove ---> BY INDEXING OPERATION
+//								SPEED UP  subMRows ---> return this.minRowsEls[row];
+//								SPPED UP  subMCols ---> return this.minRowsEls[col] - this.minRowsEls[row] - checkin;
 void Node::subMinRowsAndCorrect() {
 
 	//this->printMatrix();
@@ -196,6 +204,7 @@ void Node::subMinRowsAndCorrect() {
 	//this->printMatrix();
 }
 
+// REWRITE BY subMinRowsAndCorrect
 void Node::subMinColsAndCorrect() {
 	int correlation = 0;
 	int localMin = InfityMaxValue;
@@ -222,6 +231,7 @@ void Node::subMinColsAndCorrect() {
 	S += correlation;
 }
 
+// REWRITE WITH PREVIOS COMMENT LOGIC : SPEED UP
 void Node::getPathForRemove(int &rowE, int &colE) {
 	int max = -1;
 	int rowMin = InfityMaxValue;
@@ -328,6 +338,8 @@ void Node::printArray(int size, int *arr){
 	std::cout << std::endl;
 }
 
+// REMOVE SOME FUNCTIONS
+// $DIRTY CODE
 Node* Node::rightBranching(int row, int col) {
 	Node *node = new Node(this->size - 1, this->S, this->S);
 	node->baseSize = this->baseSize;
@@ -398,7 +410,7 @@ void Node::handleStraightforwardMatrix() {
 	}
 }
 
-/* --> NO USE IN PRODUCTION !!! <-------------------- HANDLE LOCAL CYCLES (REWRITE) ----------------*/
+/* --> NO USE IN PRODUCTION !!! <-------------------- HANDLE LOCAL CYCLES (REWRITE) $DIRTY CODE ----------------*/
 int Node::getHead(int tail) {
 	for (int i = 0; i < this->baseSize; i++) {
 		if (this->P[i] == tail)
