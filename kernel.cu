@@ -368,19 +368,20 @@ int main() {
 	};
 	
 
-	
+	srand(time(NULL)); // Seed the time	
 
 	int *M1 = (int*)malloc(n0 * n0 * sizeof(int));
 
 	for (int i = 0; i < n0; i++){
 		for (int j = 0; j < n0; j++)
+			//M1[i * n0 + j] = TMP[i][j];
 			M1[i * n0 + j] = TMP[i][j];
 	}
 
 
 
 	//std::srand(unsigned(std::time(0)));
-	srand(time(NULL)); // Seed the time
+
 
 
 	Smin = infinity;

@@ -180,12 +180,14 @@ void Node::subMinRowsAndCorrect() {
 		min = getArrayMinValue(-1, i);
 		localSDelta += min < InfityMaxValue ? min : 0;
 		mins[i] = min;
-		for (int j = 0; j < size; j++) {
-			int offset = i * this->size + j;
-			if (this->M[offset] > -1)
-				this->M[offset] -= min;
-			/*if (this->M[i][j] > -1)
-			this->M[i][j] -= min;*/
+		if (min > 0){
+			for (int j = 0; j < size; j++) {
+				int offset = i * this->size + j;
+				if (this->M[offset] > -1)
+					this->M[offset] -= min;
+				/*if (this->M[i][j] > -1)
+				this->M[i][j] -= min;*/
+			}
 		}
 		//r = subMinRowsAndCorrect(min, this->M[i], this->size);
 	}
@@ -208,24 +210,34 @@ void Node::subMinRowsAndCorrect() {
 void Node::subMinColsAndCorrect() {
 	int correlation = 0;
 	int localMin = InfityMaxValue;
-	int *colMins = new int[size];
-
+	/*int *colMins = new int[size];*/
+	int offsetj = 0;
 
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
-			int offsetj = i + this->size * j;
+			 offsetj = i + this->size * j;
 			if (this->M[offsetj] < localMin && this->M[offsetj] > -1)
 				localMin = this->M[offsetj];
 		}
-		colMins[i] = localMin;
+		//colMins[i] = localMin;
+
+		if (localMin != 0){
+			for (int j = 0; j < size; j++)
+				if (this->M[offsetj] > -1)
+					this->M[offsetj] -= localMin;
+		}
+
+
 		correlation += localMin == InfityMaxValue ? 0 : localMin;
 		localMin = InfityMaxValue;
 	}
 
-	for (int i = 0; i < size; i++)
-	for (int j = 0; j < size; j++)
-	if (this->M[i + this->size * j] > -1)
-		this->M[i + this->size * j] -= colMins[i];
+	/*for (int i = 0; i < size; i++)
+	if (colMins[i] != 0){
+		for (int j = 0; j < size; j++)
+			if (this->M[i + this->size * j] > -1)
+				this->M[i + this->size * j] -= colMins[i];
+			}*/
 
 
 	S += correlation;
@@ -236,24 +248,28 @@ void Node::getPathForRemove(int &rowE, int &colE) {
 	int max = -1;
 	int rowMin = InfityMaxValue;
 	int colMin = InfityMaxValue;
+	int ioffset, loffset;
 
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
-			int ioffset = i*this->size;
+				ioffset = i*this->size;
 			if (this->M[ioffset + j] == 0) {
+
 				rowMin = InfityMaxValue;
+				colMin = InfityMaxValue;
+
 				for (int r = 0; r < size; r++) {
 					if (this->M[ioffset + r] != -1 && j != r && this->M[ioffset + r] < rowMin) {
 						rowMin = this->M[ioffset + r];
 					}
-				}
-				colMin = InfityMaxValue;
-				for (int l = 0; l < size; l++){
-					int loffset = l * this->size;
-					if (this->M[loffset + j] != -1 && l != i && this->M[loffset + j] < colMin) {
+
+						loffset = r * this->size;
+					if (this->M[loffset + j] != -1 && r != i && this->M[loffset + j] < colMin) {
 						colMin = this->M[loffset + j];
 					}
+
 				}
+			
 				if ((colMin + rowMin) > max)
 				{
 					max = colMin + rowMin;
@@ -439,11 +455,11 @@ void Node::handlePodcycles(int &a, int &b) {
 	while (!finish)
 	{
 		countIterations++;
-		if (localCycle.size() > this->baseSize + 10)
-		{
-			std::cout << "CYCLE ERROR !!!!!!" << std::endl;
-			throw "ss";
-		}
+		//if (localCycle.size() > this->baseSize + 10)
+		//{
+		//	std::cout << "CYCLE ERROR !!!!!!" << std::endl;
+		//	throw "ss";
+		//}
 
 		if (head != -1) {
 			head = getHead(a);
