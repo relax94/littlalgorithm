@@ -6,7 +6,6 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-// ------- $TD : 'WRITE MORE ORGANIZED WITH INITIAL FUNCS';
 Node::Node(int size, int s, int s0)
 {
 	this->size = size;
@@ -15,7 +14,7 @@ Node::Node(int size, int s, int s0)
 	this->S = s;
 	this->S0 = s0;
 	this->points = 0;
-	
+
 
 	optimalX = new int[this->size];
 	optimalY = new int[this->size];
@@ -28,7 +27,6 @@ void Node::setInitials(int iSize){
 		this->P[i] = -1;
 }
 
-// --- $ID : 'MAYBE ALLOC MEMORY ON ONE WAY';
 void Node::setInitialMatrix(int *sourceMatrix) {
 	this->baseSize = this->size;
 	this->setInitials(this->baseSize);
@@ -54,7 +52,7 @@ void Node::setMatrix(int *m) {
 	//this->M = new int*[size];
 	this->M = (int*)malloc(this->size * this->size * sizeof(int));
 	/*for (int i = 0; i < size; i++)
-		this->M[i] = new int[size];*/
+	this->M[i] = new int[size];*/
 
 	for (int i = 0; i < size; i++) {
 		//this->M[i] = new int[size];
@@ -66,7 +64,6 @@ void Node::setMatrix(int *m) {
 	}
 }
 
-// ---- $TD: 'REWRITE WITH MORE PRODUCITY BY BINARY COPYING'
 void Node::setMatrixWithRemoveExclude(int *source, int row, int col) {
 
 	this->M = (int *)malloc(this->size * this->size * sizeof(int));
@@ -106,7 +103,6 @@ void Node::printMatrix() {
 	std::cout << std::endl;
 }
 
-// $TD: 'REPLACE BY STANDART STD OR BOOST';
 int Node::getArrayMinValue(int restrictVal, /*int *row*/ int row) {
 	int min = InfityMaxValue;
 	for (int i = 0; i < size; i++) {
@@ -117,10 +113,6 @@ int Node::getArrayMinValue(int restrictVal, /*int *row*/ int row) {
 	return min;
 }
 
-// $TD : 'REWRITE BY INIT WAY : CHANGES 4 CYCLES BY 2 AND
-//								SPEED UP  getPathForRemove ---> BY INDEXING OPERATION
-//								SPEED UP  subMRows ---> return this.minRowsEls[row];
-//								SPPED UP  subMCols ---> return this.minRowsEls[col] - this.minRowsEls[row] - checkin;
 void Node::subMinRowsAndCorrect() {
 
 	//this->printMatrix();
@@ -139,12 +131,9 @@ void Node::subMinRowsAndCorrect() {
 	//cudaMalloc((void**)&d_a, this->size * this->size * sizeof(int));
 	/*cudaMalloc((void**)&d_m, allocatedSize);
 	cudaMalloc((void**)&d_t, this->size * sizeof(int));
-
 	cudaMemcpy(d_m, this->M, allocatedSize, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_s, &s, sizeof(int), cudaMemcpyHostToDevice);
-
 	matrixRowCorrect << <this->size, this->size >> >(d_m, d_t, d_s);
-
 	int *response = (int*)malloc(allocatedSize);
 	int *temp = (int*)malloc(this->size * sizeof(int));
 	cudaMemcpy(response, d_m, allocatedSize, cudaMemcpyDeviceToHost);
@@ -210,21 +199,22 @@ void Node::subMinRowsAndCorrect() {
 void Node::subMinColsAndCorrect() {
 	int correlation = 0;
 	int localMin = InfityMaxValue;
-	/*int *colMins = new int[size];*/
 	int offsetj = 0;
 
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
-			 offsetj = i + this->size * j;
+			offsetj = i + this->size * j;
 			if (this->M[offsetj] < localMin && this->M[offsetj] > -1)
 				localMin = this->M[offsetj];
 		}
-		//colMins[i] = localMin;
+	
 
 		if (localMin != 0){
-			for (int j = 0; j < size; j++)
+			for (int j = 0; j < size; j++){
+				offsetj = i + this->size * j;
 				if (this->M[offsetj] > -1)
 					this->M[offsetj] -= localMin;
+			}
 		}
 
 
@@ -232,17 +222,8 @@ void Node::subMinColsAndCorrect() {
 		localMin = InfityMaxValue;
 	}
 
-	/*for (int i = 0; i < size; i++)
-	if (colMins[i] != 0){
-		for (int j = 0; j < size; j++)
-			if (this->M[i + this->size * j] > -1)
-				this->M[i + this->size * j] -= colMins[i];
-			}*/
-
-
 	S += correlation;
 }
-
 // REWRITE WITH PREVIOS COMMENT LOGIC : SPEED UP
 void Node::getPathForRemove(int &rowE, int &colE) {
 	int max = -1;
@@ -252,7 +233,7 @@ void Node::getPathForRemove(int &rowE, int &colE) {
 
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
-				ioffset = i*this->size;
+			ioffset = i*this->size;
 			if (this->M[ioffset + j] == 0) {
 
 				rowMin = InfityMaxValue;
@@ -263,13 +244,13 @@ void Node::getPathForRemove(int &rowE, int &colE) {
 						rowMin = this->M[ioffset + r];
 					}
 
-						loffset = r * this->size;
+					loffset = r * this->size;
 					if (this->M[loffset + j] != -1 && r != i && this->M[loffset + j] < colMin) {
 						colMin = this->M[loffset + j];
 					}
 
 				}
-			
+
 				if ((colMin + rowMin) > max)
 				{
 					max = colMin + rowMin;
@@ -354,8 +335,6 @@ void Node::printArray(int size, int *arr){
 	std::cout << std::endl;
 }
 
-// REMOVE SOME FUNCTIONS
-// $DIRTY CODE
 Node* Node::rightBranching(int row, int col) {
 	Node *node = new Node(this->size - 1, this->S, this->S);
 	node->baseSize = this->baseSize;
@@ -370,7 +349,7 @@ Node* Node::rightBranching(int row, int col) {
 
 	//printArray(this->baseSize, node->P);
 
-	
+
 	this->points++;
 	node->points = this->points;
 
@@ -426,7 +405,7 @@ void Node::handleStraightforwardMatrix() {
 	}
 }
 
-/* --> NO USE IN PRODUCTION !!! <-------------------- HANDLE LOCAL CYCLES (REWRITE) $DIRTY CODE ----------------*/
+/* --> NO USE IN PRODUCTION !!! <-------------------- HANDLE LOCAL CYCLES (REWRITE) ----------------*/
 int Node::getHead(int tail) {
 	for (int i = 0; i < this->baseSize; i++) {
 		if (this->P[i] == tail)
@@ -455,11 +434,11 @@ void Node::handlePodcycles(int &a, int &b) {
 	while (!finish)
 	{
 		countIterations++;
-		//if (localCycle.size() > this->baseSize + 10)
-		//{
-		//	std::cout << "CYCLE ERROR !!!!!!" << std::endl;
-		//	throw "ss";
-		//}
+		if (localCycle.size() > this->baseSize + 10)
+		{
+			std::cout << "CYCLE ERROR !!!!!!" << std::endl;
+			throw "ss";
+		}
 
 		if (head != -1) {
 			head = getHead(a);

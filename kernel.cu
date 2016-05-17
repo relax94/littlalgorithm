@@ -45,38 +45,51 @@ void branchingRight(Node *from, int row, int col){
 	right = from->rightBranching(row, col);
 }
 
+
+bool filter(Node *node){
+	return node->S >= Smin;
+}
+
 // --------- REWRITE !!!!!!!!!!! ----------------
 void filterTree(std::vector<Node*> &tree) {
 
-	std::vector<Node*> updated;
-	for (int i = 0; i < tree.size(); i++)
-	if (tree.at(i)->S < Smin)
-		updated.push_back(tree.at(i));
+	//std::vector<Node*> updated;
+	//int csmin = 0;
+	//Node *el;
 
-	std::sort(updated.begin(), updated.end(), [](Node*  const& a, Node*  const &b) {
-		return a->S < b->S;
-	});
+	
 
 
-	tree.clear();
-	tree.assign(updated.begin(), updated.end());
+	std::vector<Node*>::iterator new_last = std::remove_if(tree.begin(), tree.end(), filter);
+	tree.erase(new_last, tree.end());
+
+	//auto pend = std::remove_if(tree.begin(), tree.end(), filter);
+
+	//for (int i = 0; i < tree.size(); i++){
+	//	el = tree.at(i);
+	//	if (el->S < Smin)
+	//		updated.push_back(el);
+	//}
+
+	//std::sort(updated.begin(), updated.end(), [](Node*  const& a, Node*  const &b) {
+	//	return a->S < b->S;
+	//});
+
+
+//	tree.clear();
+	
+//	tree.assign(updated.begin(), updated.end());
 }
 
 void startEngine(int *M) {
-	localCycle.reserve(100);
 	std::vector<Node*> tree;
 	tree.reserve(100);
 
 	//------- FIX THIS ** -------------
-	Node *X0 = new Node(n0, 0, 0);
-	X0->setInitialMatrix(M);
-	X0->invokeAdduction();
+	Node *node = new Node(n0, 0, 0);
+	node->setInitialMatrix(M);
+	node->invokeAdduction();
 
-	//	X0->printMatrix();
-
-	rootM = X0->S;
-	Node *node = X0;
-	bool removeProcess = false;
 
 	// -------- WHITE TO CHECK ANOTHER ------------
 	do
@@ -102,14 +115,13 @@ void startEngine(int *M) {
 			int row = -1;
 			int col = -1;
 			node->getPathForRemove(row, col);
-			srand(time(NULL));
-
 			// -------- NEED TO MOST FASTEST WAY TO PARALL THIS 
 			// STANDART THREADS ADDED -H
 			Node *left = node->leftBranching(row, col);
 
 			Node *right = node->rightBranching(row, col);
 
+		
 			// MAYBE IN THREADS .... but slowest
 
 			//std::thread t1(branchingLeft, node, row, col);
@@ -120,11 +132,11 @@ void startEngine(int *M) {
 
 			if (right->S <= left->S) {
 				node = right;
-				tree.insert(tree.begin(), left);
+				tree.insert(tree.end(), left);
 			}
 			else if (left->S < right->S) {
 				node = left;
-				tree.insert(tree.begin(), right);
+				tree.insert(tree.end(), right);
 			}
 		}
 	} while (tree.size() > 0);
@@ -140,7 +152,10 @@ int main() {
 
 
 
-	int **Tr = new int*[6]{
+
+
+
+	int **TMP11 = new int*[6]{
 		new int[6]{-1, 27, 43, 16, 30, 20},
 			new int[6]{7, -1, 16, 1, 30, 25},
 			new int[6]{20, 13, -1, 35, 5, 0},
@@ -149,18 +164,16 @@ int main() {
 			new int[6]{23, 5, 5, 9, 5, -1}
 	};
 
-
-
-
-
-	int **TMP1 = new int*[6]{
-		new int[6]{-1, 27, 43, 16, 30, 20},
-			new int[6]{7, -1, 16, 1, 30, 25},
-			new int[6]{20, 13, -1, 35, 5, 0},
-			new int[6]{21, 16, 25, -1, 18, 18},
-			new int[6]{12, 46, 27, 48, -1, 5},
-			new int[6]{23, 5, 5, 9, 5, -1}
+	int **TMP1 = new int*[7]{
+		new int[7]{ -1, 12, 22, 28, 32, 40, 46},
+			new int[7]{12, -1, 10, 40, 20, 28, 34 },
+			new int[7]{ 22, 10, -1, 50, 10, 18, 24},
+			new int[7]{28, 27, 17, -1, 27, 35, 41 },
+			new int[7]{ 32, 20, 10, 60, -1, 8, 14 },
+			new int[7]{46, 34, 24, 74, 14, -1, 6 },
+			new int[7]{52, 40, 30, 80, 20, 6, -1 }
 	};
+
 
 
 	n0 = 200;
